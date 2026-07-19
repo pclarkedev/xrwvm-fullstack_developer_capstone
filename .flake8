@@ -1,0 +1,6 @@
+[flake8]
+exclude =
+    server/djangoenv,
+    server/frontend/node_modules,
+    server/djangoapp/migrations
+ignore = E501, E302, W191, W391
