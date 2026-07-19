@@ -3,9 +3,11 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 import logging
 import json
+import requests
 from django.views.decorators.csrf import csrf_exempt
 from .models import CarMake, CarModel
 from .populate import initiate
+from .restapis import analyze_review_sentiments, get_request, post_review
 
 
 # Get an instance of a logger
@@ -84,19 +86,49 @@ def get_cars(request):
     ]
     return JsonResponse({'CarModels': cars})
 
-# # Update the `get_dealerships` view to render the index page with
-# a list of dealerships
-# def get_dealerships(request):
-# ...
+def get_dealerships(request, state=None):
+    endpoint = 'fetchDealers' if not state or state == 'All' else f'fetchDealers/{state}'
+    try:
+        dealerships = get_request(endpoint)
+        return JsonResponse({'status': 200, 'dealers': dealerships})
+    except requests.RequestException:
+        logger.exception('Unable to retrieve dealerships')
+        return JsonResponse({'status': 502, 'error': 'Dealership service is unavailable'}, status=502)
 
-# Create a `get_dealer_reviews` view to render the reviews of a dealer
-# def get_dealer_reviews(request,dealer_id):
-# ...
 
-# Create a `get_dealer_details` view to render the dealer details
-# def get_dealer_details(request, dealer_id):
-# ...
+def get_dealer_details(request, dealer_id):
+    try:
+        dealership = get_request(f'fetchDealer/{dealer_id}')
+        dealers = [dealership] if dealership else []
+        return JsonResponse({'status': 200, 'dealer': dealers})
+    except requests.RequestException:
+        logger.exception('Unable to retrieve dealership %s', dealer_id)
+        return JsonResponse({'status': 502, 'error': 'Dealership service is unavailable'}, status=502)
 
-# Create a `add_review` view to submit a review
-# def add_review(request):
-# ...
+
+def get_dealer_reviews(request, dealer_id):
+    try:
+        reviews = get_request(f'fetchReviews/dealer/{dealer_id}')
+        for review in reviews:
+            try:
+                sentiment = analyze_review_sentiments(review['review'])
+                review['sentiment'] = sentiment.get('sentiment', 'neutral')
+            except (requests.RequestException, KeyError, ValueError):
+                review['sentiment'] = 'neutral'
+        return JsonResponse({'status': 200, 'reviews': reviews})
+    except requests.RequestException:
+        logger.exception('Unable to retrieve reviews for dealership %s', dealer_id)
+        return JsonResponse({'status': 502, 'error': 'Review service is unavailable'}, status=502)
+
+
+@csrf_exempt
+def add_review(request):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'Method not allowed'}, status=405)
+    try:
+        review = json.loads(request.body)
+        post_review(review)
+        return JsonResponse({'status': 200})
+    except (json.JSONDecodeError, TypeError, requests.RequestException):
+        logger.exception('Unable to submit review')
+        return JsonResponse({'status': 502, 'error': 'Review could not be submitted'}, status=502)

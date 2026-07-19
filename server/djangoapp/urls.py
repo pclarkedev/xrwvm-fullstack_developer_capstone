@@ -9,4 +9,9 @@ urlpatterns = [
     path(route='logout', view=views.logout_request, name='logout'),
     path(route='register', view=views.registration, name='register'),
     path(route='get_cars', view=views.get_cars, name='getcars'),
+    path(route='get_dealers', view=views.get_dealerships, name='getdealers'),
+    path(route='get_dealers/<str:state>', view=views.get_dealerships, name='getdealersbystate'),
+    path(route='dealer/<int:dealer_id>', view=views.get_dealer_details, name='dealer'),
+    path(route='reviews/dealer/<int:dealer_id>', view=views.get_dealer_reviews, name='dealerreviews'),
+    path(route='add_review', view=views.add_review, name='addreview'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
