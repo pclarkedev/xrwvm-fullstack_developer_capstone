@@ -8,16 +8,10 @@ const Register = () => {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
 
   const register = async (event) => {
     event.preventDefault();
-    if (password !== confirmPassword) {
-      setMessage('Passwords do not match.');
-      return;
-    }
-
     const response = await fetch(`${window.location.origin}/djangoapp/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -44,27 +38,23 @@ const Register = () => {
         <form className="inputs" onSubmit={register}>
           <label className="input">
             Username
-            <input className="input_field" type="text" required value={userName} onChange={(event) => setUserName(event.target.value)} />
+            <input className="input_field" type="text" placeholder="Username" required value={userName} onChange={(event) => setUserName(event.target.value)} />
           </label>
           <label className="input">
             First name
-            <input className="input_field" type="text" value={firstName} onChange={(event) => setFirstName(event.target.value)} />
+            <input className="input_field" type="text" placeholder="First Name" value={firstName} onChange={(event) => setFirstName(event.target.value)} />
           </label>
           <label className="input">
             Last name
-            <input className="input_field" type="text" value={lastName} onChange={(event) => setLastName(event.target.value)} />
+            <input className="input_field" type="text" placeholder="Last Name" value={lastName} onChange={(event) => setLastName(event.target.value)} />
           </label>
           <label className="input">
             Email
-            <input className="input_field" type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
+            <input className="input_field" type="email" placeholder="email" value={email} onChange={(event) => setEmail(event.target.value)} />
           </label>
           <label className="input">
             Password
-            <input className="input_field" type="password" required value={password} onChange={(event) => setPassword(event.target.value)} />
-          </label>
-          <label className="input">
-            Confirm password
-            <input className="input_field" type="password" required value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} />
+            <input className="input_field" type="password" placeholder="Password" required value={password} onChange={(event) => setPassword(event.target.value)} />
           </label>
           {message && <p role="alert">{message}</p>}
           <div className="submit_panel">
