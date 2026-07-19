@@ -4,6 +4,8 @@ import './Register.css';
 
 const Register = () => {
   const [userName, setUserName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -19,12 +21,16 @@ const Register = () => {
     const response = await fetch(`${window.location.origin}/djangoapp/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userName, email, password }),
+      body: JSON.stringify({ userName, firstName, lastName, email, password }),
     });
     const data = await response.json();
-    if (response.ok && data.status === 'Registered') {
+    if (response.ok && data.status === 'Authenticated') {
       sessionStorage.setItem('username', data.userName);
       window.location.href = '/';
+      return;
+    }
+    if (data.error === 'Already Registered') {
+      setMessage('The user with the same username is already registered.');
       return;
     }
     setMessage(data.status || 'The account could not be created.');
@@ -39,6 +45,14 @@ const Register = () => {
           <label className="input">
             Username
             <input className="input_field" type="text" required value={userName} onChange={(event) => setUserName(event.target.value)} />
+          </label>
+          <label className="input">
+            First name
+            <input className="input_field" type="text" value={firstName} onChange={(event) => setFirstName(event.target.value)} />
+          </label>
+          <label className="input">
+            Last name
+            <input className="input_field" type="text" value={lastName} onChange={(event) => setLastName(event.target.value)} />
           </label>
           <label className="input">
             Email

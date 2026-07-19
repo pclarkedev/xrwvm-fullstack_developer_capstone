@@ -11,13 +11,17 @@ const logout = async (e) => {
     e.preventDefault();
   }
 
-  const response = await fetch('/djangoapp/logout', { method: 'POST' });
-  if (!response.ok) {
+  const logout_url = window.location.origin + '/djangoapp/logout';
+  const response = await fetch(logout_url, { method: 'GET' });
+  const json = await response.json();
+  if (!response.ok || !json) {
     alert('The user could not be logged out.');
     return;
   }
 
+  const username = sessionStorage.getItem('username');
   sessionStorage.removeItem('username');
+  alert(`Logging out ${username}...`);
   window.location.href = '/';
 };
 

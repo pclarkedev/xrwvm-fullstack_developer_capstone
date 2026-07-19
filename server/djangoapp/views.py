@@ -37,7 +37,7 @@ def logout_request(request):
     if request.method not in ('GET', 'POST'):
         return JsonResponse({'status': 'Method not allowed'}, status=405)
     logout(request)
-    return JsonResponse({'status': 'Logged out'})
+    return JsonResponse({'userName': ''})
 
 
 @csrf_exempt
@@ -49,6 +49,8 @@ def registration(request):
         data = json.loads(request.body)
         username = data['userName'].strip()
         password = data['password']
+        first_name = data.get('firstName', '').strip()
+        last_name = data.get('lastName', '').strip()
         email = data.get('email', '').strip()
     except (json.JSONDecodeError, KeyError, AttributeError):
         return JsonResponse({'status': 'Invalid registration request'}, status=400)
@@ -56,11 +58,17 @@ def registration(request):
     if not username or not password:
         return JsonResponse({'status': 'Username and password are required'}, status=400)
     if User.objects.filter(username=username).exists():
-        return JsonResponse({'status': 'Username already exists'}, status=409)
+        return JsonResponse({'userName': username, 'error': 'Already Registered'})
 
-    user = User.objects.create_user(username=username, email=email, password=password)
+    user = User.objects.create_user(
+        username=username,
+        first_name=first_name,
+        last_name=last_name,
+        email=email,
+        password=password,
+    )
     login(request, user)
-    return JsonResponse({'userName': user.username, 'status': 'Registered'}, status=201)
+    return JsonResponse({'userName': user.username, 'status': 'Authenticated'})
 
 # # Update the `get_dealerships` view to render the index page with
 # a list of dealerships
